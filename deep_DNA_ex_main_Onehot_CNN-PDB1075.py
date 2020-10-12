@@ -14,8 +14,6 @@ from keras.preprocessing.text import one_hot
 import numpy as np
 import utils.tools as utils
 import encode_schema as tool
-import cnn_models as cnnmodel
-import multiple_cnn_models as multiple_cnn
 from datetime import datetime
 # from keras_self_attention import SeqSelfAttention
 from densenet.models import one_d
