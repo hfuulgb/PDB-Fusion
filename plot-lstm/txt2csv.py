@@ -15,27 +15,29 @@ def set_style(name, height, alignment, bold=False):
     style.font = font
     return style
 
+
 # 获取字符串长度，一个中文的长度为2
 def len_byte(value):
     length = len(value)
-    utf8_length = len(value.encode('utf-8'))
+    utf8_length = len(value.encode("utf-8"))
     length = (utf8_length - length) / 2 + length
     return int(length)
+
 
 # txt转excel
 def txt_xls(filename, xlsname):
     try:
-        f = open(filename, 'r',encoding='utf-8')  # 加b是二进制，需要加encoding，不然后面报错
+        f = open(filename, "r", encoding="utf-8")  # 加b是二进制，需要加encoding，不然后面报错
         xls = xlwt.Workbook()
         # 生成excel的方法，声明excel
-        sheet = xls.add_sheet('sheet', cell_overwrite_ok=True)
-        result=[]
+        sheet = xls.add_sheet("sheet", cell_overwrite_ok=True)
+        result = []
         i = 0
-        for line in f: #
+        for line in f:  #
             item = line.split(",")
             result.append(item)
             for j in range(len(item)):
-                sheet.write(i, j, item[j], set_style('Times New Roman', 220, 'bottom'))
+                sheet.write(i, j, item[j], set_style("Times New Roman", 220, "bottom"))
             i += 1
 
         col_width = []
@@ -59,8 +61,8 @@ def txt_xls(filename, xlsname):
         raise
 
 
-if __name__ == '__main__':
-    filename = 'lstm4-32.txt'
+if __name__ == "__main__":
+    filename = "lstm4-32.txt"
     #    filename=filename.encode()
-    xlsname = 'lstm4-32.xls'
+    xlsname = "lstm4-32.xls"
     txt_xls(filename, xlsname)

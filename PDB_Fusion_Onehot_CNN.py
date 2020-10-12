@@ -14,12 +14,8 @@ from keras.preprocessing.text import one_hot
 import numpy as np
 import utils.tools as utils
 import encode_schema as tool
-import cnn_models as cnnmodel
-import multiple_cnn_models as multiple_cnn
 from datetime import datetime
 
-# from keras_self_attention import SeqSelfAttention
-from densenet.models import one_d
 
 # ================gpu动态占用====================#
 import tensorflow as tf
@@ -43,7 +39,7 @@ def get_CNN_BILSTM_model(
     uselstm=1,
     lstm_size=32,
     dense_size=128,
-    drop=0.2,
+    drop=0.3,
 ):
     # 构建网络
     inputs = layers.Input(shape=(maxlen, 20), name="input")
@@ -97,10 +93,10 @@ if __name__ == "__main__":
     if not os.path.exists(path):
         os.makedirs(path)
 
-    cnnmodel_array = [1, 2]
+    cnnmodel_array = [2, 3]
     filters = 64
     # conv_width = [7,8,9]
-    conv_width = 5
+    conv_width = [5, 7]
     conv_stride = 1
     max_polling_width1 = 3
     max_polling_width2 = 2
@@ -108,13 +104,15 @@ if __name__ == "__main__":
     lstm_size2 = 16
     dense_size1 = 128
     dense_size2 = 256
-    drop_out = [0.1, 0.3]
-    uselstm = [0, 1]
+    # drop_out = [0.4,0.6,0.3]
+    drop_out = 0.3
+    uselstm = [1, 0]
     batchsiz = [32, 64]
     maxlen = 600
+    window_sizes = [600, 700, 800, 900, 1000, 1100]
     # for model_layers in model_array[:-1]:
     # for batch_s in batchsiz[:-1]:
-    for drop_o in drop_out[:-1]:
+    for conv_w in conv_width[:-1]:
         for cnn_layers in cnnmodel_array[:-1]:
             for use_blstm in uselstm[:-1]:
                 batch_s = 32
@@ -145,7 +143,7 @@ if __name__ == "__main__":
                     "cnn_layers=["
                     + str(cnn_layers)
                     + "]--[conv_width=["
-                    + str(conv_width)
+                    + str(conv_w)
                     + "]\n"
                 )
                 # fw_perf.writelines('conv_width=['+str(7)+ ']\n')
@@ -158,6 +156,7 @@ if __name__ == "__main__":
                 )
                 fw_perf.writelines("densensize=[" + str(dense_size1) + "]\n")
                 fw_perf.writelines("batch_s=[" + str(batch_s) + "]\n")
+                fw_perf.writelines("drop_o=[" + str(drop_out) + "]\n")
                 fw_perf.writelines(
                     "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
                     + "\n"
@@ -172,13 +171,13 @@ if __name__ == "__main__":
                 )
 
                 scores = []
-                k_fold = 10
+                k_fold = 5
 
-                for index in range(1):
+                for index in range(5):
                     dataset = []
-                    dataset = tool.read_seq_onehot("data/DNA_Pading_600_PDB186")
+                    dataset = tool.read_seq_onehot("data/DNA_Pading_600_PDB14189")
                     # print(dataset.shape[0])
-                    label = np.loadtxt("data/class_PDB186")
+                    label = np.loadtxt("data/class_PDB14189")
                     # print(label.shape())
                     skf = StratifiedKFold(
                         n_splits=k_fold, shuffle=True, random_state=1024
@@ -191,10 +190,10 @@ if __name__ == "__main__":
                         # (number=4,conv_width=7,max_pool_size=2,uselstm=1,lstm_size=32,dense_size=128):
                         model = get_CNN_BILSTM_model(
                             cnn_size=cnn_layers,
-                            conv_width=7,
+                            conv_width=conv_w,
                             uselstm=use_blstm,
                             lstm_size=lstm_size2,
-                            drop=drop_o,
+                            drop=drop_out,
                         )
 
                         # 指定回调函数
@@ -217,9 +216,10 @@ if __name__ == "__main__":
                             dataset[train],
                             y_train,
                             validation_split=0.1,
-                            batch_size=32,
+                            batch_size=batch_s,
                             epochs=50,
                             verbose=1,
+                            shuffle=True,
                             callbacks=[reduce_lr, early_stopping],
                         )
 

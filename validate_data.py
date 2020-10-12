@@ -5,8 +5,8 @@ import pdb
 
 def read_seq(seq_file, mod="extend"):
     seq_list = []
-    seq = ''
-    with open(seq_file, 'r') as fp:
+    seq = ""
+    with open(seq_file, "r") as fp:
         for line in fp:
             seq = line[:-1]
             seq_array = get_seq_concolutional_array(seq)
@@ -14,17 +14,18 @@ def read_seq(seq_file, mod="extend"):
 
     return np.array(seq_list)
 
+
 def get_seq_concolutional_array(seq):
     # seq = seq.replace('U', 'T')
     # except BJOUXZ
-    alpha = 'ACDEFGHIKLMNPQRSTVWY'  
-    row = (len(seq))
+    alpha = "ACDEFGHIKLMNPQRSTVWY"
+    row = len(seq)
     new_array = np.zeros((row, 20))
 
     for i, val in enumerate(seq):
-        
-        if val not in 'ACDEFGHIKLMNPQRSTVWY':
-            if val == 'Z':
+
+        if val not in "ACDEFGHIKLMNPQRSTVWY":
+            if val == "Z":
                 new_array[i] = np.array([0.0] * 20)
             # if val == 'S':
             #     new_array[i] = np.array([0, 0.5, 0.5, 0, 0])
@@ -38,7 +39,7 @@ def get_seq_concolutional_array(seq):
     return new_array
 
 
-#------------------------------------主函数---------------------------------------------
+# ------------------------------------主函数---------------------------------------------
 
 from sklearn.model_selection import StratifiedKFold, KFold, StratifiedShuffleSplit
 from keras import backend as K
@@ -50,15 +51,15 @@ import os
 if __name__ == "__main__":
     # trueSet, falseSet = readfile('data/IE_true.seq', 'data/IE_false.seq', 0)
     seq_list = []
-    seq = ''
-    i=0
-    with open("data/DNA_Pading2_PDB14189", 'r') as fp:
+    seq = ""
+    i = 0
+    with open("data/DNA_Pading2_PDB14189", "r") as fp:
         for line in fp:
             seq = line[:-1]
-            if (len(seq)!=1000):
-                print("["+str(i)+"]:/-["+str(len(seq))+"]")
-            i+=1
-    
+            if len(seq) != 1000:
+                print("[" + str(i) + "]:/-[" + str(len(seq)) + "]")
+            i += 1
+
 # from numpy import array
 # from keras.preprocessing.text import one_hot
 # from keras.preprocessing.sequence import pad_sequences
