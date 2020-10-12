@@ -14,10 +14,8 @@ from keras.preprocessing.text import one_hot
 import numpy as np
 import utils.tools as utils
 import encode_schema as tool
-import cnn_models as cnnmodel
-import multiple_cnn_models as multiple_cnn
 from datetime import datetime
-from densenet.models import one_d
+
 
 # ================gpu动态占用====================#
 import tensorflow as tf
@@ -70,42 +68,6 @@ def get_CNN_BILSTM_model(cnn_size=4,filter=64,conv_width=7,max_pool_size=2,usels
     x = layers.Dense(2, activation='sigmoid', name="dense_12")(x)
 
     model = models.Model(inputs, x, name='DBP_CNN('+str(cnn_size)+')_model')
-    return model
-
-def get_CNN_L4_BILSTM_model2():   
-    # 构建网络
-    inputs = layers.Input(shape=(1000, 20), name="input")
-    x = Convolution1D(64,
-                      7,
-                      strides=1,
-                      padding='same',
-                      kernel_initializer='random_uniform')(inputs)
-    x = layers.BatchNormalization(axis=2)(x)
-    x = layers.Activation('relu')(x)
-    x = layers.MaxPool1D(2)(x)
-    x = layers.Dropout(0.2)(x)
-
-    x = one_d.DenseNet6(4, 5, 0, 5, 1, 0.5, 7, 1, 64, 2, 1, 0)(inputs)
-
-    # x = Convolution1D(64,
-    #                   7,
-    #                   strides=1,
-    #                   padding='same',
-    #                   kernel_initializer='random_uniform')(x)
-    # x = layers.BatchNormalization(axis=2)(x)
-    # x = layers.Activation('relu')(x)
-    # x = layers.MaxPool1D(2)(x)
-    # x = layers.Dropout(0.2)(x)
-    # x = layers.Bidirectional(LSTM(16, return_sequences=True),
-    #                          name="bidirectional_31")(x)
-    x = layers.Flatten()(x)
-    x = layers.Dense(128, activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Dropout(0.2)(x)
-    x = layers.Dense(2, activation='sigmoid', name="dense_12")(x)
-
-    model = models.Model(inputs, x, name='multiple_cnn')
-
     return model
 
 if __name__ == "__main__":
