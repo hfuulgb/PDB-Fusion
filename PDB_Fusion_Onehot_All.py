@@ -110,182 +110,179 @@ if __name__ == "__main__":
     batchsiz = [32, 64]
     maxlen = 600
     use_blstm=1
-    window_sizes = []
-    for i in range(600, 2700, 50):
-       window_sizes.append(i)
-    
-    for maxlen in window_sizes[:-1]:
-        for conv_w in conv_width[:-1]:
-            for cnn_layers in cnnmodel_array[:-1]:
-                # for use_blstm in uselstm[:-1]:
-                batch_s = 16
+    # window_sizes = []
+   
+    # for use_blstm in uselstm[:-1]:
+    batch_s = 16
+    cnn_layers=2
+    conv_w=5
 
-                start = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-                file_fullname = ""
-                if use_blstm:
-                    file_fullname += (
-                        "DBP14189-"
-                        + str(maxlen)
-                        + "-CNN["
-                        + str(cnn_layers)
-                        + "]-"
-                    )
-                else:
-                    file_fullname += (
-                        "DBP14189-" + str(maxlen) + "-CNN[" + str(cnn_layers) + "]-"
-                    )
-                fw_perf = open(path + file_fullname + start, "w")
-                fw_perf.writelines(
-                    "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-                    + "\n"
-                )
-                fw_perf.writelines("maxlen=[" + str(maxlen) + "]\n")
-                fw_perf.writelines(
-                    "cnn_layers=["
-                    + str(cnn_layers)
-                    + "]--[conv_width=["
-                    + str(conv_w)
-                    + "]\n"
-                )
-                # fw_perf.writelines('conv_width=['+str(7)+ ']\n')
-                fw_perf.writelines(
-                    "uselsem=["
-                    + str(use_blstm)
-                    + "]--[lstm_size=["
-                    + str(lstm_size2)
-                    + "]\n"
-                )
-                fw_perf.writelines("densensize=[" + str(dense_size1) + "]\n")
-                fw_perf.writelines("batch_s=[" + str(batch_s) + "]\n")
-                fw_perf.writelines("drop_o=[" + str(drop_out) + "]\n")
-                fw_perf.writelines(
-                    "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-                    + "\n"
-                )
-                fw_perf.write(
-                    "          acc,           precision,              npv,          sensitivity,         specificity,          mcc,                 ppv,             auc,                pr"
-                    + "\n"
-                )
-                fw_perf.writelines(
-                    "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-                    + "\n"
-                )
+    start = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    file_fullname = ""
+    if use_blstm:
+        file_fullname += (
+            "DBP14189-"
+            + str(maxlen)
+            + "-CNN["
+            + str(cnn_layers)
+            + "]-"
+        )
+    else:
+        file_fullname += (
+            "DBP14189-" + str(maxlen) + "-CNN[" + str(cnn_layers) + "]-"
+        )
+    fw_perf = open(path + file_fullname + start, "w")
+    fw_perf.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+    fw_perf.writelines("maxlen=[" + str(maxlen) + "]\n")
+    fw_perf.writelines(
+        "cnn_layers=["
+        + str(cnn_layers)
+        + "]--[conv_width=["
+        + str(conv_w)
+        + "]\n"
+    )
+    # fw_perf.writelines('conv_width=['+str(7)+ ']\n')
+    fw_perf.writelines(
+        "uselsem=["
+        + str(use_blstm)
+        + "]--[lstm_size=["
+        + str(lstm_size2)
+        + "]\n"
+    )
+    fw_perf.writelines("densensize=[" + str(dense_size1) + "]\n")
+    fw_perf.writelines("batch_s=[" + str(batch_s) + "]\n")
+    fw_perf.writelines("drop_o=[" + str(drop_out) + "]\n")
+    fw_perf.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+    fw_perf.write(
+        "          acc,           precision,              npv,          sensitivity,         specificity,          mcc,                 ppv,             auc,                pr"
+        + "\n"
+    )
+    fw_perf.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
 
-                scores = []
-                k_fold = 5
+    scores = []
+    k_fold = 5
 
-                # for index in range(5):
-                dataset = []
-                dataset = tool.read_seq_onehot(os.getcwd()+"/data/DNA-Pading-DB14189-"  + str(maxlen) )
-                # print(dataset.shape[0])
-                label = np.loadtxt(os.getcwd()+"/data/class_PDB14189")
+    # for index in range(5):
+    dataset = []
+    dataset = tool.read_seq_onehot(os.getcwd()+"/data/DNA-Pading-DB14189-"  + str(maxlen) )
+    # print(dataset.shape[0])
+    label = np.loadtxt(os.getcwd()+"/data/class_PDB14189")
 
-                split = StratifiedShuffleSplit(n_splits = 1,test_size = 0.2,random_state = 42)
+    split = StratifiedShuffleSplit(n_splits = 1,test_size = 0.2,random_state = 42)
 
-                #根据 分层采样
-                for train_index,test_index in split.split(dataset,label):
-                    X_train, X_test = dataset[train_index], dataset[test_index]#训练集对应的值
-                    y_train, y_test = label[train_index], label[test_index]#类别集对应的值
+    #根据 分层采样
+    for train_index,test_index in split.split(dataset,label):
+        X_train, X_test = dataset[train_index], dataset[test_index]#训练集对应的值
+        y_train, y_test = label[train_index], label[test_index]#类别集对应的值
 
-                    # create the model
-                    # (number=4,conv_width=7,max_pool_size=2,uselstm=1,lstm_size=32,dense_size=128):
-                    model = get_CNN_BILSTM_model(
-                        cnn_size=cnn_layers,
-                        conv_width=conv_w,
-                        uselstm=use_blstm,
-                        lstm_size=lstm_size2,
-                        drop=drop_out,
-                    )
+        # create the model
+        # (number=4,conv_width=7,max_pool_size=2,uselstm=1,lstm_size=32,dense_size=128):
+        model = get_CNN_BILSTM_model(
+            cnn_size=cnn_layers,
+            conv_width=conv_w,
+            uselstm=use_blstm,
+            lstm_size=lstm_size2,
+            drop=drop_out,
+        )
 
-                    # 指定回调函数
-                    reduce_lr = ReduceLROnPlateau(
-                        monitor="val_loss", factor=0.1, patience=3, verbose=1
-                    )
-                    early_stopping = EarlyStopping(
-                        monitor="val_loss", min_delta=0, patience=5, verbose=1
-                    )
+        # 指定回调函数
+        reduce_lr = ReduceLROnPlateau(
+            monitor="val_loss", factor=0.1, patience=3, verbose=1
+        )
+        early_stopping = EarlyStopping(
+            monitor="val_loss", min_delta=0, patience=5, verbose=1
+        )
 
-                    print(model.summary())
-                    model.compile(
-                        loss="binary_crossentropy",
-                        optimizer="adam",
-                        metrics=["accuracy"],
-                    )
-                    y_train = utils.to_categorical(label[train_index])
+        print(model.summary())
+        model.compile(
+            loss="binary_crossentropy",
+            optimizer="adam",
+            metrics=["accuracy"],
+        )
+        y_train = utils.to_categorical(label[train_index])
 
-                    model.fit(
-                        dataset[train_index],
-                        y_train,
-                        validation_split=0.1,
-                        batch_size=batch_s,
-                        epochs=50,
-                        verbose=1,
-                        shuffle=True,
-                        callbacks=[reduce_lr, early_stopping],
-                    )
+        model.fit(
+            dataset[train_index],
+            y_train,
+            validation_split=0.1,
+            batch_size=batch_s,
+            epochs=50,
+            verbose=1,
+            shuffle=True,
+            callbacks=[reduce_lr, early_stopping],
+        )
 
-                    # prediction probability
-                    y_test = utils.to_categorical(label[test_index])
-                    predictions = model.predict(dataset[test_index])
+        # prediction probability
+        y_test = utils.to_categorical(label[test_index])
+        predictions = model.predict(dataset[test_index])
 
-                    predictions_prob = model.predict(dataset[test_index])[:, 1]
-                    auc_ = roc_auc_score(label[test_index], predictions_prob)
-                    pr = average_precision_score(label[test_index], predictions_prob)
+        predictions_prob = model.predict(dataset[test_index])[:, 1]
+        auc_ = roc_auc_score(label[test_index], predictions_prob)
+        pr = average_precision_score(label[test_index], predictions_prob)
 
-                    y_class = utils.categorical_probas_to_classes(predictions)
-                    # true_y_C_C=utils.categorical_probas_to_classes(true_y_C)
-                    true_y = utils.categorical_probas_to_classes(y_test)
-                    (
-                        acc,
-                        precision,
-                        npv,
-                        sensitivity,
-                        specificity,
-                        mcc,
-                        f1,
-                    ) = utils.calculate_performace(len(y_class), y_class, true_y)
-                    print("======================")
-                    print("======================")
-                    print(
-                        "\tacc=%0.4f,pre=%0.4f,npv=%0.4f,sn=%0.4f,sp=%0.4f,mcc=%0.4f,f1=%0.4f"
-                        % (acc, precision, npv, sensitivity, specificity, mcc, f1)
-                    )
-                    print("\tauc=%0.4f,pr=%0.4f" % (auc_, pr))
+        y_class = utils.categorical_probas_to_classes(predictions)
+        # true_y_C_C=utils.categorical_probas_to_classes(true_y_C)
+        true_y = utils.categorical_probas_to_classes(y_test)
+        (
+            acc,
+            precision,
+            npv,
+            sensitivity,
+            specificity,
+            mcc,
+            f1,
+        ) = utils.calculate_performace(len(y_class), y_class, true_y)
+        print("======================")
+        print("======================")
+        print(
+            "\tacc=%0.4f,pre=%0.4f,npv=%0.4f,sn=%0.4f,sp=%0.4f,mcc=%0.4f,f1=%0.4f"
+            % (acc, precision, npv, sensitivity, specificity, mcc, f1)
+        )
+        print("\tauc=%0.4f,pr=%0.4f" % (auc_, pr))
 
-                    fw_perf.write(
-                        str(acc)
-                        + ","
-                        + str(precision)
-                        + ","
-                        + str(npv)
-                        + ","
-                        + str(sensitivity)
-                        + ","
-                        + str(specificity)
-                        + ","
-                        + str(mcc)
-                        + ","
-                        + str(f1)
-                        + ","
-                        + str(auc_)
-                        + ","
-                        + str(pr)
-                        + "\n"
-                    )
+        fw_perf.write(
+            str(acc)
+            + ","
+            + str(precision)
+            + ","
+            + str(npv)
+            + ","
+            + str(sensitivity)
+            + ","
+            + str(specificity)
+            + ","
+            + str(mcc)
+            + ","
+            + str(f1)
+            + ","
+            + str(auc_)
+            + ","
+            + str(pr)
+            + "\n"
+        )
 
-                    scores.append(
-                        [
-                            acc,
-                            precision,
-                            npv,
-                            sensitivity,
-                            specificity,
-                            mcc,
-                            f1,
-                            auc_,
-                            pr,
-                        ]
-                    )
+        scores.append(
+            [
+                acc,
+                precision,
+                npv,
+                sensitivity,
+                specificity,
+                mcc,
+                f1,
+                auc_,
+                pr,
+            ]
+        )
 
         scores = np.array(scores)
         print(len(scores))
